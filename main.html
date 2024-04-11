@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Палитра цветов</h1>
+    <div class="color-palette">
+        <div class="color-box" style="background-color: #ff0000;"></div>
+        <div class="color-box" style="background-color: #00ff00;"></div>
+        <div class="color-box" style="background-color: #0000ff;"></div>
+    </div>
+
+    <div class="adjustment-section">
+        <div>
+            <label for="hue-slider">Hue:</label>
+            <input type="range" id="hue-slider" min="0" max="360" step="1" value="0">
+        </div>
+        <div>
+            <label for="saturation-slider">Saturation:</label>
+            <input type="range" id="saturation-slider" min="0" max="100" step="1" value="100">
+        </div>
+        <div>
+            <label for="lightness-slider">Lightness:</label>
+            <input type="range" id="lightness-slider" min="0" max="100" step="1" value="50">
+        </div>
+        <div id="adjusted-color" class="color-box"></div>
+    </div>
+
+    <div>
+        <button id="add-color-btn">Добавить в палитру</button>
+    </div>
+
+    <div id="selected-colors-container">
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const colorPalette = document.querySelectorAll(".color-box");
+    const hueSlider = document.getElementById("hue-slider");
+    const saturationSlider = document.getElementById("saturation-slider");
+    const lightnessSlider = document.getElementById("lightness-slider");
+    const adjustedColorBox = document.getElementById("adjusted-color");
+    const addColorBtn = document.getElementById("add-color-btn");
+    const selectedColorsContainer = document.getElementById("selected-colors-container");
+
+    function updateSliders(color) {
+        const rgb = color.match(/\d+/g);
+        const r = parseInt(rgb[0]) / 255;
+        const g = parseInt(rgb[1]) / 255;
+        const b = parseInt(rgb[2]) / 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0; 
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r:
+                    h = ((g - b) / d) + (g < b ? 6 : 0);
+                    break;
+                case g:
+                    h = ((b - r) / d) + 2;
+                    break;
+                case b:
+                    h = ((r - g) / d) + 4;
+                    break;
+            }
+            h *= 60;
+        }
+        hueSlider.value = Math.round(h);
+        saturationSlider.value = Math.round(s * 100);
+        lightnessSlider.value = Math.round(l * 100);
+        updateAdjustedColor();
+    }
+
+    function updateAdjustedColor() {
+        const hue = hueSlider.value;
+        const saturation = saturationSlider.value;
+        const lightness = lightnessSlider.value;
+
+        const adjustedColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+        adjustedColorBox.style.backgroundColor = adjustedColor;
+    }
+
+    function addToPalette(color) {
+        const colorBox = document.createElement("div");
+        colorBox.style.backgroundColor = color;
+        colorBox.className = "color-box";
+        selectedColorsContainer.appendChild(colorBox);
+    }
+
+    colorPalette.forEach(function(colorBox) {
+        colorBox.addEventListener("click", function() {
+            const color = colorBox.style.backgroundColor;
+            adjustedColorBox.style.backgroundColor = color;
+            updateSliders(color);
+        });
+    });
+
+    hueSlider.addEventListener("input", updateAdjustedColor);
+    saturationSlider.addEventListener("input", updateAdjustedColor);
+    lightnessSlider.addEventListener("input", updateAdjustedColor);
+
+    addColorBtn.addEventListener("click", function() {
+        const color = adjustedColorBox.style.backgroundColor;
+        addToPalette(color);
+    });
+
+    });
+    </script>
+</body>
+</html>
